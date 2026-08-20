@@ -118,12 +118,24 @@ export default async function DashboardPage() {
             {workspace?.name || "No workspace found"}
           </p>
 
-          <Link
-            href="/dashboard/incidents"
-            className="inline-block mt-4 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-zinc-200 transition"
-          >
-            View Incidents
-          </Link>
+          <div className="flex flex-wrap gap-3 mt-4">
+            <Link
+              href="/dashboard/incidents"
+              className="inline-block bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-zinc-200 transition"
+            >
+              View Incidents
+            </Link>
+
+            {workspace?.id && (
+              <Link
+                href={`/status/${workspace.id}`}
+                target="_blank"
+                className="inline-block border border-zinc-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-zinc-900 transition"
+              >
+                Public Status Page
+              </Link>
+            )}
+          </div>
         </div>
 
         <MonitorDashboard />

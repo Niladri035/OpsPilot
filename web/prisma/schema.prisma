@@ -45,14 +45,15 @@ model User {
 }
 
 model Workspace {
-  id          String       @id @default(cuid())
-  name        String
-  ownerId     String
-  owner       User         @relation(fields: [ownerId], references: [id])
-  memberships Membership[]
-  monitors    Monitor[]
-  incidents   Incident[]
-  createdAt   DateTime     @default(now())
+  id            String       @id @default(cuid())
+  name          String
+  ownerId       String
+  owner         User         @relation(fields: [ownerId], references: [id])
+  memberships   Membership[]
+  monitors      Monitor[]
+  incidents     Incident[]
+  statusEnabled Boolean      @default(true)
+  createdAt     DateTime     @default(now())
 }
 
 model Membership {

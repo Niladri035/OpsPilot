@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Monitor } from "@prisma/client";
+import { sendAlertEmail } from "@/lib/email";
 
 function shouldCheckMonitor(monitor: Monitor): boolean {
   if (!monitor.lastCheckedAt) {
@@ -59,17 +60,42 @@ export async function checkMonitor(monitor: Monitor): Promise<boolean> {
       },
     });
 
-    if (!existingIncident) {
-      await prisma.incident.create({
-        data: {
-          workspaceId: monitor.workspaceId,
-          monitorId: monitor.id,
-          title: `${monitor.name} is down`,
-          severity: "SEV_1",
-          status: "INVESTIGATING",
-        },
-      });
-    }
+if (!existingIncident) {
+  const incident = await prisma.incident.create({
+    data: {
+      workspaceId: monitor.workspaceId,
+      monitorId: monitor.id,
+      title: `${monitor.name} is down`,
+      severity: "SEV_1",
+      status: "INVESTIGATING",
+    },
+  });
+
+  // Workspace owner-এর email নাও
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: monitor.workspaceId },
+    include: {
+      owner: {
+        select: { email: true },
+      },
+    },
+  });
+
+  const alertTo =
+    workspace?.owner?.email ||
+    process.env.ALERT_EMAIL_TO ||
+    "";
+
+  await sendAlertEmail({
+    to: alertTo,
+    subject: `🚨 OpsPilot Alert: ${monitor.name} is DOWN`,
+    incidentTitle: incident.title,
+    monitorName: monitor.name,
+    monitorUrl: monitor.url,
+    severity: incident.severity,
+    workspaceName: workspace?.name || "Unknown Workspace",
+  });
+}
   }
 
   return isUp;
