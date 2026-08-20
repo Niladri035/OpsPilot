@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum MonitorStatus {
+  UP
+  DOWN
+  UNKNOWN
+}
+
+enum IncidentSeverity {
+  SEV_1
+  SEV_2
+  SEV_3
+  SEV_4
+}
+
+enum IncidentStatus {
+  INVESTIGATING
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  passwordHash String?
+  memberships  Membership[]
+  ownedWorkspaces Workspace[]
+  createdAt    DateTime     @default(now())
+}
+
+model Workspace {
+  id          String       @id @default(cuid())
+  name        String
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  memberships Membership[]
+  monitors    Monitor[]
+  incidents   Incident[]
+  createdAt   DateTime     @default(now())
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        Role      @default(MEMBER)
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, workspaceId])
+}
+
+model Monitor {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id])
+  name          String
+  url           String
+  intervalSeconds Int         @default(300)
+  status        MonitorStatus @default(UNKNOWN)
+  lastCheckedAt DateTime?
+  incidents     Incident[]
+  createdAt     DateTime      @default(now())
+}
+
+model Incident {
+  id          String           @id @default(cuid())
+  workspaceId String
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id])
+  monitorId   String?
+  monitor     Monitor?         @relation(fields: [monitorId], references: [id])
+  title       String
+  severity    IncidentSeverity @default(SEV_3)
+  status      IncidentStatus   @default(INVESTIGATING)
+  createdAt   DateTime         @default(now())
+}
