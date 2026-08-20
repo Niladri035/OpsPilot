@@ -1,0 +1,19 @@
+name: OpsPilot Monitor Cron
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-monitors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call OpsPilot monitor cron endpoint
+        run: |
+          curl -X POST "$MONITOR_CRON_URL" \
+            -H "x-cron-secret: $CRON_SECRET"
+        env:
+          MONITOR_CRON_URL: ${{ vars.MONITOR_CRON_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

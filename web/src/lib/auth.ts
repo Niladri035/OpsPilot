@@ -9,6 +9,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   providers: [
     CredentialsProvider({
@@ -49,5 +50,5 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? "fallback-dev-secret-change-in-production",
 };

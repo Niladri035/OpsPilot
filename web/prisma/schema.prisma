@@ -90,4 +90,16 @@ model Incident {
   severity    IncidentSeverity @default(SEV_3)
   status      IncidentStatus   @default(INVESTIGATING)
   createdAt   DateTime         @default(now())
+  aiAnalyses  AiAnalysis[]
+}
+
+model AiAnalysis {
+  id             String   @id @default(cuid())
+  incidentId     String
+  incident       Incident @relation(fields: [incidentId], references: [id])
+  rootCause      String
+  reasoning      String
+  recommendation String
+  model          String?
+  createdAt      DateTime @default(now())
 }

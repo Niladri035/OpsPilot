@@ -21,6 +21,7 @@ export default function MonitorDashboard() {
   const [intervalSeconds, setIntervalSeconds] = useState(300);
   const [loading, setLoading] = useState(false);
   const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [runningAll, setRunningAll] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -119,6 +120,35 @@ export default function MonitorDashboard() {
       setCheckingId(null);
     }
   };
+  const runAllChecks = async () => {
+  setMessage("");
+  setError("");
+  setRunningAll(true);
+
+  try {
+    const res = await fetch("/api/monitors/run-all", {
+      method: "POST",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Failed to run all checks");
+      setRunningAll(false);
+      return;
+    }
+
+    setMessage(
+      `Checked ${data.checked} monitor(s). ${data.down} monitor(s) down.`
+    );
+
+    setRunningAll(false);
+    fetchMonitors();
+  } catch {
+    setError("Something went wrong");
+    setRunningAll(false);
+  }
+};
 
   const statusColor = (status: Monitor["status"]) => {
     if (status === "UP") {
@@ -203,15 +233,25 @@ export default function MonitorDashboard() {
       </div>
 
       <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-900/50">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <h2 className="text-xl font-semibold">Monitors</h2>
 
-          <button
-            onClick={fetchMonitors}
-            className="border border-zinc-700 px-4 py-2 rounded-lg text-sm hover:bg-zinc-800 transition"
-          >
-            Refresh
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={runAllChecks}
+              disabled={runningAll}
+              className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-semibold transition"
+            >
+              {runningAll ? "Running..." : "Run All Checks"}
+            </button>
+
+            <button
+              onClick={fetchMonitors}
+              className="border border-zinc-700 px-4 py-2 rounded-lg text-sm hover:bg-zinc-800 transition"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         {monitors.length === 0 ? (
