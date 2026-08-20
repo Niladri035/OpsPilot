@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
+import MonitorDashboard from "@/components/MonitorDashboard";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -43,11 +44,13 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-zinc-400 mb-10">
-          Welcome back, {user.name}
-        </p>
+      <section className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <p className="text-zinc-400">
+            Welcome back, {user.name}
+          </p>
+        </div>
 
         <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-900/50">
           <h2 className="text-lg font-semibold mb-2">Current Workspace</h2>
@@ -55,6 +58,8 @@ export default async function DashboardPage() {
             {workspace?.name || "No workspace found"}
           </p>
         </div>
+
+        <MonitorDashboard />
       </section>
     </main>
   );
